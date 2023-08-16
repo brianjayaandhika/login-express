@@ -7,12 +7,18 @@ const movieController = {
     try {
       if (req.body.title && req.body.year && req.body.genre) {
         // Untuk menambahkan ke database menggunakan .create()
-        const newMovie = await movie.create(req.body);
+        const newMovie = await movie.create({
+          title: req.body.title,
+          year: req.body.year,
+          genre: req.body.genre,
+          poster: req.file.filename,
+        });
         responseHelper(res, 200, newMovie, 'Add Movie Success');
       } else {
         responseHelper(res, 400, null, 'Add Movie Failed');
       }
     } catch (error) {
+      console.log(error);
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },

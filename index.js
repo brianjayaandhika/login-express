@@ -5,7 +5,8 @@ import cors from 'cors';
 
 import db from './database/db.js';
 import movieRouter from './routes/movieRouter.js';
-import galleryRouter from './routes/galleryRouter.js';
+import userRouter from './routes/userRouter.js';
+import responseHelpers from './helpers/responseHelper.js';
 
 const port = process.env.PORT || 3000;
 
@@ -23,14 +24,12 @@ db.sync()
   });
 
 app.use('/movies', movieRouter);
-app.use('/gallery', galleryRouter);
+app.use('/user', userRouter);
 
 app.use(express.static('temp/uploads'));
 
 app.all('*', (req, res) => {
-  res.status(404).json({
-    message: 'API not found',
-  });
+  responseHelpers(res, 404, null, 'API not found');
 });
 
 app.listen(port, () => {
