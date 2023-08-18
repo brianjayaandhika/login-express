@@ -14,5 +14,7 @@ userRouter.post('/forgot', userController.forgotPassword);
 userRouter.get('/forgot/:username/:encryptedOtp', jwtController.verifyForgotPassword);
 userRouter.get('/view/:username', verifyController.verifyToken, userController.getProfile);
 userRouter.get('/all-user', adminRoute, userController.getAllUser);
+userRouter.put('/role/:username', adminRoute, userController.updateRole);
+userRouter.delete('/delete/:username', adminRoute, userController.deleteUser);
 
 export default userRouter;

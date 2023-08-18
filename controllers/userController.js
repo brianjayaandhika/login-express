@@ -163,8 +163,36 @@ const userController = {
 
   getAllUser: async (req, res) => {
     try {
-      const allUser = user.findAll({});
+      const allUser = await user.findAll({});
+
+      console.log(allUser);
       responseHelper(res, 200, allUser, 'Get All User Success');
+    } catch (error) {
+      responseHelper(res, 500, null, 'Internal Server Error');
+    }
+  },
+
+  updateRole: async (req, res) => {
+    try {
+      const selectedUser = await user.findByPk(req.params.username);
+
+      if (selectedUser) {
+        const updatedUser = await selectedUser.update({ role: req.body.role });
+        responseHelper(res, 200, updatedUser, 'Update Role Success');
+      } else {
+        responseHelper(res, 404, null, 'User not found');
+      }
+    } catch (error) {
+      responseHelper(res, 500, null, 'Internal Server Error');
+    }
+  },
+
+  deleteUser: async (req, res) => {
+    try {
+      const selectedUser = await user.findByPk(req.params.username);
+
+      await selectedUser.destroy();
+      responseHelper(res, 200, null, 'Delete User Success');
     } catch (error) {
       responseHelper(res, 500, null, 'Internal Server Error');
     }
