@@ -3,7 +3,7 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  plugins: ['prettier'],
+  plugins: ['prettier', 'jest'],
   extends: ['eslint:recommended', 'prettier'],
   overrides: [
     {

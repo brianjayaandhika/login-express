@@ -51,5 +51,19 @@ const jwtController = {
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },
+
+  verifyForgotPassword: async (req, res) => {
+    try {
+      const selectedUser = await user.findByPk(req.params.username);
+      const decryptedOtp = req.params.encryptedOtp / 291831;
+
+      if (selectedUser) {
+        selectedUser.update({ password: decryptedOtp });
+        responseHelper(res, 200, null, 'Your password has been changed, check your email for the new password!');
+      }
+    } catch (error) {
+      responseHelper(res, 500, null, 'Internal Server Error');
+    }
+  },
 };
 export default jwtController;

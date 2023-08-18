@@ -120,29 +120,29 @@ const userController = {
     try {
       const selectedUser = await user.findOne({ where: { email: req.body.email } });
       const otp = Math.ceil(Math.random() * 1000000 + 1);
+      const encryptedOtp = otp * 291831;
 
       if (selectedUser) {
         const emailMessage = {
           from: 'sender@server.com',
           to: req.body.email,
           subject: 'Email Verification',
-          text: `Your new password is ${otp}`,
+          html: `<p>Click <a href="${process.env.DB_URL}/user/forgot/${selectedUser.username}/${encryptedOtp}" target="_blank" rel="noopener noreferrer">here</a>
+          to change your password to ${otp}</p>`,
         };
 
         emailSender(emailMessage, (err) => {
           if (err) {
             responseHelper(res, 500, null, 'Failed to send forgot password email.');
           } else {
-            responseHelper(res, 200, null, 'Check your email for your password');
+            responseHelper(res, 200, null, 'Check your email to get a new password!');
           }
         });
-
-        selectedUser.update({ password: otp });
-        responseHelper(res, 200, null, 'Password has changed');
       } else {
         responseHelper(res, 400, null, 'User not found');
       }
     } catch (error) {
+      console.log(error);
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },

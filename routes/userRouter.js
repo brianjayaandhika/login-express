@@ -1,6 +1,7 @@
 import express from 'express';
 import userController from '../controllers/userController.js';
 import verifyController from '../controllers/verifyController.js';
+import jwtController from '../controllers/verifyController.js';
 
 const userRouter = express.Router();
 
@@ -9,6 +10,7 @@ userRouter.get('/verify/:username', verifyController.verifyEmail);
 userRouter.post('/login', userController.loginUser);
 userRouter.put('/password', verifyController.verifyToken, userController.changePassword);
 userRouter.post('/forgot', userController.forgotPassword);
+userRouter.get('/forgot/:username/:encryptedOtp', jwtController.verifyForgotPassword);
 userRouter.get('/view/:username', verifyController.verifyToken, userController.getProfile);
 
 export default userRouter;
