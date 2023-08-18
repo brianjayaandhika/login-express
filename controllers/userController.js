@@ -160,6 +160,15 @@ const userController = {
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },
+
+  getAllUser: async (req, res) => {
+    try {
+      const allUser = user.findAll({});
+      responseHelper(res, 200, allUser, 'Get All User Success');
+    } catch (error) {
+      responseHelper(res, 500, null, 'Internal Server Error');
+    }
+  },
 };
 
 export default userController;

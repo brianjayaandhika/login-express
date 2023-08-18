@@ -4,6 +4,7 @@ import verifyController from '../controllers/verifyController.js';
 import jwtController from '../controllers/verifyController.js';
 
 const userRouter = express.Router();
+const adminRoute = [verifyController.verifyToken, verifyController.verifyAdmin];
 
 userRouter.post('/register', userController.registerUser);
 userRouter.get('/verify/:username', verifyController.verifyEmail);
@@ -12,5 +13,6 @@ userRouter.put('/password', verifyController.verifyToken, userController.changeP
 userRouter.post('/forgot', userController.forgotPassword);
 userRouter.get('/forgot/:username/:encryptedOtp', jwtController.verifyForgotPassword);
 userRouter.get('/view/:username', verifyController.verifyToken, userController.getProfile);
+userRouter.get('/all-user', adminRoute, userController.getAllUser);
 
 export default userRouter;
