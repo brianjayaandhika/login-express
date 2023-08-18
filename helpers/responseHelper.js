@@ -9,7 +9,7 @@ const responseHelpers = (res, status, data, message) => {
     response.data = data;
   }
 
-  if (status === 500 || status === 404 || status === 400) {
+  if (status === 500 || status === 404 || status === 400 || status === 403) {
     const errorMessage = response.message;
     return res.status(status).json({
       status: 'Error',

@@ -6,6 +6,8 @@ import { emailSender } from '../services/emailSender.js';
 const userController = {
   registerUser: async (req, res) => {
     try {
+      req.body.role && responseHelper(res, 403, null, 'Forbidden');
+
       if (req.body.username && req.body.email && req.body.password) {
         const duplicateUsername = await user.findAll({
           where: {
@@ -126,7 +128,7 @@ const userController = {
         const emailMessage = {
           from: 'sender@server.com',
           to: req.body.email,
-          subject: 'Email Verification',
+          subject: 'Forgot Password',
           html: `<p>Click <a href="${process.env.DB_URL}/user/forgot/${selectedUser.username}/${encryptedOtp}" target="_blank" rel="noopener noreferrer">here</a>
           to change your password to ${otp}</p>`,
         };

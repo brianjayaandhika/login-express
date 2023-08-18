@@ -23,6 +23,10 @@ const movieModel = (sequelize) =>
       type: DataTypes.STRING,
       allowNull: false,
     },
+    posterId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   });
 
 export default movieModel;

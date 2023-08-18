@@ -1,20 +1,29 @@
 import { movie } from '../database/db.js';
 import responseHelper from '../helpers/responseHelper.js';
 import { Op } from 'sequelize';
+import { uploadImage } from '../helpers/uploadHelper.js';
 
 const movieController = {
   addMovie: async (req, res) => {
     try {
       if (req.body.title && req.body.year && req.body.genre) {
         // Untuk menambahkan ke database menggunakan .create()
+
+        const result = await uploadImage(req.file?.path);
+        const { public_id, secure_url } = result;
+
         const newMovie = await movie.create({
           title: req.body.title,
           year: req.body.year,
           genre: req.body.genre,
-          poster: req.file.filename,
+          poster: secure_url,
+          posterId: public_id,
         });
+
         responseHelper(res, 200, newMovie, 'Add Movie Success');
+        res.end();
       } else {
+        console.log(error);
         responseHelper(res, 400, null, 'Add Movie Failed');
       }
     } catch (error) {
