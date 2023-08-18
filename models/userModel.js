@@ -17,11 +17,11 @@ const userModel = (sequelize) =>
     },
     role: {
       type: DataTypes.STRING,
-      default: 'user',
+      defaultValue: 'user',
     },
     verified: {
       type: DataTypes.BOOLEAN,
-      default: false,
+      defaultValue: false,
     },
   });
 

@@ -1,6 +1,7 @@
 import { user } from '../database/db.js';
 import responseHelper from '../helpers/responseHelper.js';
 import jwt from 'jsonwebtoken';
+import { emailSender } from '../services/emailSender.js';
 
 const userController = {
   registerUser: async (req, res) => {
@@ -18,23 +19,39 @@ const userController = {
         });
 
         if (duplicateUsername.length > 0 || duplicateEmail.length > 0) {
-          responseHelper(res, 400, null, 'Username already exists!');
+          responseHelper(res, 400, null, 'Username or Email already exists!');
         } else {
           const newUser = await user.create(req.body);
 
-          responseHelper(res, 200, newUser, 'Register Success!');
+          const emailMessage = {
+            from: 'sender@server.com',
+            to: req.body.email,
+            subject: 'Email Verification',
+            html: `<p>Click <a href="${process.env.DB_URL}/user/verify/${req.body.username}" target="_blank" rel="noopener noreferrer">here</a>
+              to Verify Your Email</p>`,
+          };
+
+          emailSender(emailMessage, (err, info) => {
+            if (err) {
+              console.error(err);
+              responseHelper(res, 500, null, 'Failed to send verification email.');
+            } else {
+              console.log('Email sent:', info.response);
+              responseHelper(res, 200, newUser, 'Register Success, Please check your email for verification!');
+            }
+          });
         }
       } else {
         responseHelper(res, 400, null, 'Register Failed!');
       }
     } catch (error) {
+      console.log(error);
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },
   loginUser: async (req, res) => {
     try {
       if (req.body.username && req.body.password) {
-        // Untuk menambahkan ke database menggunakan .create()
         const checkLogin = await user.findAll({
           where: {
             username: req.body.username,
@@ -61,7 +78,12 @@ const userController = {
             role: checkLogin[0].role,
             token: token,
           };
-          responseHelper(res, 200, loginSession, 'Login Success!');
+
+          if (checkLogin[0].verified) {
+            responseHelper(res, 200, loginSession, 'Login Success!');
+          } else {
+            responseHelper(res, 400, null, 'Email is not verified!');
+          }
         } else {
           responseHelper(res, 400, null, 'Login Failed!');
         }
@@ -81,7 +103,7 @@ const userController = {
 
       if (selectedUser) {
         if (oldPassword === req.body.oldPassword) {
-          const updatedUser = await selectedUser.update(req.body);
+          const updatedUser = await selectedUser.update({ password: req.body.newPassword });
           responseHelper(res, 200, updatedUser, 'Change Password Success');
         } else {
           responseHelper(res, 400, null, 'Old Password is wrong!');
@@ -96,12 +118,27 @@ const userController = {
 
   forgotPassword: async (req, res) => {
     try {
-      const selectedUser = await user.findByPk(req.body.username);
-      const otp = Math.ceil(Math.random() * 1000000);
+      const selectedUser = await user.findOne({ where: { email: req.body.email } });
+      const otp = Math.ceil(Math.random() * 1000000 + 1);
 
       if (selectedUser) {
-        const updatedUser = await selectedUser.update({ password: otp });
-        responseHelper(res, 200, updatedUser, 'Password has changed');
+        const emailMessage = {
+          from: 'sender@server.com',
+          to: req.body.email,
+          subject: 'Email Verification',
+          text: `Your new password is ${otp}`,
+        };
+
+        emailSender(emailMessage, (err) => {
+          if (err) {
+            responseHelper(res, 500, null, 'Failed to send forgot password email.');
+          } else {
+            responseHelper(res, 200, null, 'Check your email for your password');
+          }
+        });
+
+        selectedUser.update({ password: otp });
+        responseHelper(res, 200, null, 'Password has changed');
       } else {
         responseHelper(res, 400, null, 'User not found');
       }
