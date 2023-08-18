@@ -5,6 +5,20 @@ import { emailSender } from '../services/emailSender.js';
 
 const userController = {
   registerUser: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/register',
+     *   Method: 'POST',
+     *   Request: {
+     *     Body: {
+     *       "username": "string",
+     *       "email": "string",
+     *       "password": "string"
+     *     }
+     *   },
+     *   Description: 'Registers a new user. If successful, sends a verification email.'
+     * }
+     */
     try {
       req.body.role && responseHelper(res, 403, null, 'Forbidden');
 
@@ -51,7 +65,21 @@ const userController = {
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },
+
   loginUser: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/login',
+     *   Method: 'POST',
+     *   Request: {
+     *     Body: {
+     *       "username": "string",
+     *       "password": "string"
+     *     }
+     *   },
+     *   Description: 'Logs in a user and generates an authentication token.'
+     * }
+     */
     try {
       if (req.body.username && req.body.password) {
         const checkLogin = await user.findAll({
@@ -99,6 +127,20 @@ const userController = {
   },
 
   changePassword: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/change-password',
+     *   Method: 'PUT',
+     *   Request: {
+     *     Body: {
+     *       "username": "string",
+     *       "oldPassword": "string",
+     *       "newPassword": "string"
+     *     }
+     *   },
+     *   Description: 'Changes the user's password if the old password matches.'
+     * }
+     */
     try {
       const selectedUser = await user.findByPk(req.body.username);
       const oldPassword = selectedUser.password;
@@ -119,6 +161,18 @@ const userController = {
   },
 
   forgotPassword: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/forgot-password',
+     *   Method: 'POST',
+     *   Request: {
+     *     Body: {
+     *       "email": "string"
+     *     }
+     *   },
+     *   Description: 'Sends a password reset email to the user's email address.'
+     * }
+     */
     try {
       const selectedUser = await user.findOne({ where: { email: req.body.email } });
       const otp = Math.ceil(Math.random() * 1000000 + 1);
@@ -150,6 +204,13 @@ const userController = {
   },
 
   getProfile: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/profile/:username',
+     *   Method: 'GET',
+     *   Description: 'Retrieves the profile information of a specific user.'
+     * }
+     */
     try {
       const selectedUser = await user.findByPk(req.params.username);
 
@@ -164,6 +225,13 @@ const userController = {
   },
 
   getAllUser: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/users',
+     *   Method: 'GET',
+     *   Description: 'Retrieves a list of all registered users. (Admin access required)'
+     * }
+     */
     try {
       const allUser = await user.findAll({});
 
@@ -175,6 +243,18 @@ const userController = {
   },
 
   updateRole: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/users/:username/role',
+     *   Method: 'PUT',
+     *   Request: {
+     *     Body: {
+     *       "role": "string"
+     *     }
+     *   },
+     *   Description: 'Updates the role of a specific user. (Admin access required)'
+     * }
+     */
     try {
       const selectedUser = await user.findByPk(req.params.username);
 
@@ -190,6 +270,13 @@ const userController = {
   },
 
   deleteUser: async (req, res) => {
+    /**
+     * Data: {
+     *   Endpoint: '/api/users/:username',
+     *   Method: 'DELETE',
+     *   Description: 'Deletes a user from the system. (Admin access required)'
+     * }
+     */
     try {
       const selectedUser = await user.findByPk(req.params.username);
 
