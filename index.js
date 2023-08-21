@@ -26,7 +26,7 @@ db.sync()
 
 app.use('/movies', movieRouter);
 app.use('/user', userRouter);
-app.use('/api', documentation);
+app.use('/', documentation);
 // check emails in https://mailtrap.io/inboxes/2376809/messages/3658600755
 
 app.use(express.static('temp/uploads'));
