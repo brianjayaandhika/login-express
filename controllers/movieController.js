@@ -1,6 +1,6 @@
 import { movie } from '../database/db.js';
-import responseHelper from '../helpers/responseHelper.js';
 import { Op } from 'sequelize';
+import responseHelper from '../helpers/responseHelper.js';
 import { uploadImage } from '../helpers/uploadHelper.js';
 
 const movieController = {
@@ -21,16 +21,17 @@ const movieController = {
      * }
      */
     try {
-      if (req.body.title && req.body.year && req.body.genre) {
-        // Untuk menambahkan ke database menggunakan .create()
+      const { title, year, genre } = req.body;
+      const file = req.file;
 
-        const result = await uploadImage(req.file?.path);
+      if (title && year && genre) {
+        const result = await uploadImage(file?.path);
         const { public_id, secure_url } = result;
 
         const newMovie = await movie.create({
-          title: req.body.title,
-          year: req.body.year,
-          genre: req.body.genre,
+          title,
+          year,
+          genre,
           poster: secure_url,
           posterId: public_id,
         });
@@ -40,7 +41,6 @@ const movieController = {
         responseHelper(res, 400, null, 'Add Movie Failed');
       }
     } catch (error) {
-      console.log(error);
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },
@@ -74,14 +74,14 @@ const movieController = {
       const movies = await movie.findAll({
         attributes: ['title', 'genre'],
         where: {
-          genre: selectedGenre.toLocaleLowerCase(),
+          genre: selectedGenre.toLowerCase(),
         },
       });
 
-      if (movies) {
+      if (movies.length > 1) {
         responseHelper(res, 200, movies, 'Get Movies By Genre Success');
       } else {
-        responseHelper(res, 400, movies, 'Get Movies By Genre Failed');
+        responseHelper(res, 404, null, 'No movies found');
       }
     } catch (error) {
       responseHelper(res, 500, null, 'Internal Server Error');
@@ -97,21 +97,21 @@ const movieController = {
      * }
      */
     try {
-      const selectedYear = Number(req.params.year);
-      const isBefore = req.params.beforeafter === 'before';
+      const selectedYear = Number(req?.params?.year);
+      const isBefore = req?.body?.timeClause || 'before';
 
-      const whereClause = isBefore ? { year: { [Op.lte]: selectedYear } } : { year: { [Op.gte]: selectedYear } };
+      const whereClause =
+        isBefore === 'before' ? { year: { [Op.lte]: selectedYear } } : { year: { [Op.gte]: selectedYear } };
 
       const movies = await movie.findAll({
         attributes: ['title', 'year'],
-        where: { ...whereClause },
+        where: whereClause,
       });
 
-      if (movies) {
-        responseHelper(res, 200, movies, 'Get Movies By Year Success');
-      } else {
-        responseHelper(res, 400, movies, 'Get Movies By Year Failed');
-      }
+      const statusCode = movies ? 200 : 400;
+      const message = movies ? 'Get Movies By Year Success' : 'Get Movies By Year Failed';
+
+      responseHelper(res, statusCode, movies, message);
     } catch (error) {
       responseHelper(res, 500, null, 'Internal Server Error');
     }
@@ -126,7 +126,6 @@ const movieController = {
      * }
      */
     try {
-      console.log(req.params.id);
       const selectedMovie = await movie.findByPk(req.params.id);
       if (selectedMovie) {
         responseHelper(res, 200, selectedMovie, 'Get Movie By Id Success');
@@ -156,8 +155,8 @@ const movieController = {
     try {
       const selectedMovie = await movie.findByPk(req.params.id);
       if (selectedMovie) {
-        const updatedMovie = await selectedMovie.update(req.body);
-        responseHelper(res, 200, updatedMovie, 'Update Movie Success');
+        await selectedMovie.update(req.body);
+        responseHelper(res, 200, selectedMovie, 'Update Movie Success');
       } else {
         responseHelper(res, 404, null, 'API not found');
       }
