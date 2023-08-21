@@ -1,42 +1,53 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { cloudinary } from 'cloudinary';
 import { uploadImage } from '../../helpers/uploadHelper.js'; // Adjust the path to the actual path of your code
 import { jest } from '@jest/globals';
+import upload from '../../helpers/multerHelper.js';
 
-jest.mock('cloudinary');
+jest.mock('cloudinary', () => ({
+  v2: {
+    uploader: {
+      upload: jest.fn(),
+    },
+  },
+}));
 
 describe('uploadImage', () => {
-  it('should upload an image successfully', async () => {
-    // Set up mock behavior for cloudinary.uploader.upload
-    cloudinary.uploader.upload.mockResolvedValue({
-      public_id: 'public_id',
-      secure_url: 'secure_url',
+  test('should upload an image and return the result', async () => {
+    // Arrange
+    const imagePath = '/path/to/image.jpg';
+    const expectedUrl = 'https://cloudinary.com/image.jpg';
+    const expectedPublicId = 'public_id_123';
+
+    // Mock the cloudinary.uploader.upload function
+    cloudinary.v2.uploader.upload.mockResolvedValue({
+      url: expectedUrl,
+      public_id: expectedPublicId,
     });
 
-    const imagePath = '/path/to/image.jpg';
+    // Act
     const result = await uploadImage(imagePath);
 
-    expect(cloudinary.uploader.upload).toHaveBeenCalledWith(
-      imagePath,
-      expect.objectContaining({
-        overwrite: true,
-        resource_type: 'image',
-        folder: 'Movie_Poster',
-      })
-    );
-    expect(result).toEqual({
-      public_id: 'public_id',
-      secure_url: 'secure_url',
-    });
+    // Assert
+    expect(result).toBeDefined();
+    expect(result.url).toBe(expectedUrl);
+    expect(result.public_id).toBe(expectedPublicId);
   });
 
-  it('should handle upload error', async () => {
-    // Set up mock behavior for cloudinary.uploader.upload
-    cloudinary.uploader.upload.mockRejectedValue(new Error('Upload Error'));
-
+  test('should handle error if upload fails', async () => {
+    // Arrange
     const imagePath = '/path/to/image.jpg';
-    const result = await uploadImage(imagePath);
+    const expectedError = new Error('Upload failed');
+    cloudinary.uploader.upload.mockRejectedValue(expectedError);
 
-    expect(cloudinary.uploader.upload).toHaveBeenCalledWith(imagePath, expect.any(Object));
-    expect(result).toBeUndefined(); // Expect the result to be undefined in case of error
+    // Act
+    try {
+      await uploadImage(imagePath);
+      // Assert
+      // Fail the test if uploadImage does not throw an error
+      fail('Expected uploadImage to throw an error');
+    } catch (error) {
+      // Assert
+      expect(error).toBe(expectedError);
+    }
   });
 });

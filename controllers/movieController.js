@@ -6,10 +6,10 @@ import { uploadImage } from '../helpers/uploadHelper.js';
 const movieController = {
   addMovie: async (req, res) => {
     try {
-      const { title, year, genre } = req.body;
-      const file = req.file;
+      const { title, year, genre } = await req.body;
+      const file = await req.file;
 
-      if (title && year && genre) {
+      if (title && year && genre && file) {
         const result = await uploadImage(file?.path);
         const { public_id, secure_url } = result;
 
@@ -26,6 +26,7 @@ const movieController = {
         responseHelper(res, 400, null, 'Add Movie Failed');
       }
     } catch (error) {
+      console.log(error);
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },

@@ -1,12 +1,12 @@
-import jwtController from '../controllers/jwtController';
+import jwtController from '../../controllers/verifyController.js';
 import jwt from 'jsonwebtoken';
-import responseHelper from '../helpers/responseHelper';
-import { user } from '../database/db';
+import responseHelper from '../../helpers/responseHelper.js';
+import { user } from '../../database/db';
 import { jest } from '@jest/globals';
 
 jest.mock('jsonwebtoken');
-jest.mock('../helpers/responseHelper');
-jest.mock('../database/db');
+jest.mock('../../helpers/responseHelper.js');
+jest.mock('../../database/db');
 
 describe('jwtController', () => {
   const mockReq = {
