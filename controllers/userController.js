@@ -213,9 +213,15 @@ const userController = {
      */
     try {
       const selectedUser = await user.findByPk(req.params.username);
+      const data = {
+        username: selectedUser?.username,
+        email: selectedUser?.email,
+        role: selectedUser?.role,
+        verified: selectedUser?.verified,
+      };
 
       if (selectedUser) {
-        responseHelper(res, 200, selectedUser, 'Get Profile Success');
+        responseHelper(res, 200, data, 'Get Profile Success');
       } else {
         responseHelper(res, 404, null, 'User not found');
       }
@@ -233,9 +239,9 @@ const userController = {
      * }
      */
     try {
-      const allUser = await user.findAll({});
-
-      console.log(allUser);
+      const allUser = await user.findAll({
+        attributes: ['username', 'role', 'email', 'verified'],
+      });
       responseHelper(res, 200, allUser, 'Get All User Success');
     } catch (error) {
       responseHelper(res, 500, null, 'Internal Server Error');
