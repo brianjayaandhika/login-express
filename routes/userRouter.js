@@ -11,7 +11,7 @@ userRouter.get('/verify/:username', verifyController.verifyEmail);
 userRouter.post('/login', userController.loginUser);
 userRouter.put('/password', verifyController.verifyToken, userController.changePassword);
 userRouter.post('/forgot', userController.forgotPassword);
-userRouter.get('/forgot/:username/:encryptedOtp', jwtController.verifyForgotPassword);
+userRouter.get('/forgot/:username', jwtController.verifyForgotPassword);
 userRouter.get('/view/:username', verifyController.verifyToken, userController.getProfile);
 userRouter.get('/all-user', adminRoute, userController.getAllUser);
 userRouter.put('/role/:username', adminRoute, userController.updateRole);

@@ -7,6 +7,7 @@ import db from './database/db.js';
 import movieRouter from './routes/movieRouter.js';
 import userRouter from './routes/userRouter.js';
 import responseHelpers from './helpers/responseHelper.js';
+import documentation from './documentation/documentation.js';
 
 const port = process.env.PORT || 3000;
 
@@ -25,6 +26,7 @@ db.sync()
 
 app.use('/movies', movieRouter);
 app.use('/user', userRouter);
+app.use('/api', documentation);
 // check emails in https://mailtrap.io/inboxes/2376809/messages/3658600755
 
 app.use(express.static('temp/uploads'));

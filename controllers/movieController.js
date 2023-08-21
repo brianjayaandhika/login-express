@@ -5,21 +5,6 @@ import { uploadImage } from '../helpers/uploadHelper.js';
 
 const movieController = {
   addMovie: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/movies',
-     *   Method: 'POST',
-     *   Request: {
-     *     Body: {
-     *       "title": "string",
-     *       "year": "number",
-     *       "genre": "string",
-     *       "poster": "file"
-     *     }
-     *   },
-     *   Description: 'Adds a new movie to the database.'
-     * }
-     */
     try {
       const { title, year, genre } = req.body;
       const file = req.file;
@@ -46,13 +31,6 @@ const movieController = {
   },
 
   getMovie: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/movies',
-     *   Method: 'GET',
-     *   Description: 'Retrieves a list of all movies.'
-     * }
-     */
     try {
       const movies = await movie.findAll({});
       responseHelper(res, 200, movies, 'Get Movies Success');
@@ -62,13 +40,6 @@ const movieController = {
   },
 
   getMovieByGenre: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/movies/genre/:genre',
-     *   Method: 'GET',
-     *   Description: 'Retrieves a list of movies based on the specified genre.'
-     * }
-     */
     try {
       const selectedGenre = await req.params.genre;
       const movies = await movie.findAll({
@@ -89,13 +60,6 @@ const movieController = {
   },
 
   getMovieByYear: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/movies/year/:year/:beforeafter',
-     *   Method: 'GET',
-     *   Description: 'Retrieves a list of movies based on the specified year and filter.'
-     * }
-     */
     try {
       const selectedYear = Number(req?.params?.year);
       const isBefore = req?.body?.timeClause || 'before';
@@ -118,40 +82,20 @@ const movieController = {
   },
 
   getMovieById: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/movies/:id',
-     *   Method: 'GET',
-     *   Description: 'Retrieves detailed information about a specific movie by its ID.'
-     * }
-     */
     try {
       const selectedMovie = await movie.findByPk(req.params.id);
       if (selectedMovie) {
         responseHelper(res, 200, selectedMovie, 'Get Movie By Id Success');
-      } else {
-        responseHelper(res, 404, null, 'API not found');
+        return;
       }
+
+      responseHelper(res, 404, null, 'API not found');
     } catch (error) {
       responseHelper(res, 500, null, 'Internal Server Error');
     }
   },
 
   updateMovie: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/movies/:id',
-     *   Method: 'PUT',
-     *   Request: {
-     *     Body: {
-     *       "title": "string",
-     *       "year": "number",
-     *       "genre": "string"
-     *     }
-     *   },
-     *   Description: 'Updates information about a specific movie by its ID.'
-     * }
-     */
     try {
       const selectedMovie = await movie.findByPk(req.params.id);
       if (selectedMovie) {
@@ -166,13 +110,6 @@ const movieController = {
   },
 
   deleteMovie: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/movies/:id',
-     *   Method: 'DELETE',
-     *   Description: 'Deletes a specific movie from the database by its ID.'
-     * }
-     */
     try {
       const selectedMovie = await movie.findByPk(req.params.id);
       if (selectedMovie) {

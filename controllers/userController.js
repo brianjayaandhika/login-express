@@ -6,7 +6,12 @@ import { generateAuthToken } from '../services/generateToken.js';
 const userController = {
   registerUser: async (req, res) => {
     try {
-      const { username, email, password } = req.body;
+      const { username, email, password, role } = req.body;
+
+      if (role) {
+        responseHelper(res, 403, null, 'Forbidden');
+        return;
+      }
 
       if (!username || !email || !password) {
         responseHelper(res, 400, null, 'Register Failed!');
@@ -44,10 +49,11 @@ const userController = {
         if (err) {
           console.error(err);
           responseHelper(res, 500, null, 'Failed to send verification email.');
-        } else {
-          console.log('Email sent:', info.response);
-          responseHelper(res, 200, newUser, 'Register Success, Please check your email for verification!');
+          return;
         }
+
+        console.log('Email sent:', info.response);
+        responseHelper(res, 200, newUser, 'Register Success, Please check your email for verification!');
       });
     } catch (error) {
       console.log(error);
@@ -56,19 +62,6 @@ const userController = {
   },
 
   loginUser: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/login',
-     *   Method: 'POST',
-     *   Request: {
-     *     Body: {
-     *       "username": "string",
-     *       "password": "string"
-     *     }
-     *   },
-     *   Description: 'Logs in a user and generates an authentication token.'
-     * }
-     */
     try {
       const { username, password } = req.body;
 
@@ -91,15 +84,17 @@ const userController = {
 
           if (checkLogin[0].verified) {
             responseHelper(res, 200, loginSession, 'Login Success!');
-          } else {
-            responseHelper(res, 400, null, 'Email is not verified!');
+            return;
           }
-        } else {
-          responseHelper(res, 400, null, 'Login Failed!');
+
+          responseHelper(res, 400, null, 'Email is not verified!');
+          return;
         }
-      } else {
-        responseHelper(res, 400, null, 'Need username and password to login!');
+        responseHelper(res, 400, null, 'Login Failed!');
+        return;
       }
+
+      responseHelper(res, 400, null, 'Need username and password to login!');
     } catch (error) {
       console.log(error);
       responseHelper(res, 500, null, 'Internal Server Error');
@@ -107,20 +102,6 @@ const userController = {
   },
 
   changePassword: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/change-password',
-     *   Method: 'PUT',
-     *   Request: {
-     *     Body: {
-     *       "username": "string",
-     *       "oldPassword": "string",
-     *       "newPassword": "string"
-     *     }
-     *   },
-     *   Description: 'Changes the user's password if the old password matches.'
-     * }
-     */
     try {
       const { username, oldPassword, newPassword } = req.body;
       const selectedUser = await user.findByPk(username);
@@ -143,39 +124,25 @@ const userController = {
   },
 
   forgotPassword: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/forgot-password',
-     *   Method: 'POST',
-     *   Request: {
-     *     Body: {
-     *       "email": "string"
-     *     }
-     *   },
-     *   Description: 'Sends a password reset email to the user's email address.'
-     * }
-     */
     try {
       const { email } = req.body;
       const selectedUser = await user.findOne({ where: { email } });
 
       if (selectedUser) {
-        const otp = Math.ceil(Math.random() * 1000000 + 1);
-        const encryptedOtp = otp * 291831;
-        const resetPasswordUrl = `${process.env.DB_URL}/user/forgot/${selectedUser.username}/${encryptedOtp}`;
+        const resetPasswordUrl = `${process.env.DB_URL}/user/forgot/${selectedUser.username}`;
         const emailMessage = {
           from: 'sender@server.com',
           to: email,
           subject: 'Forgot Password',
           html: `<p>Click <a href="${resetPasswordUrl}" target="_blank" rel="noopener noreferrer">here</a>
-          to change your password to ${otp}</p>`,
+          to update your password</p>`,
         };
 
         emailSender(emailMessage, (err) => {
           if (err) {
             responseHelper(res, 500, null, 'Failed to send forgot password email.');
           } else {
-            responseHelper(res, 200, null, 'Check your email to get a new password!');
+            responseHelper(res, 200, null, 'Check your email to finish changing your password!');
           }
         });
       } else {
@@ -187,13 +154,6 @@ const userController = {
   },
 
   getProfile: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/profile/:username',
-     *   Method: 'GET',
-     *   Description: 'Retrieves the profile information of a specific user.'
-     * }
-     */
     try {
       const selectedUser = await user.findByPk(req.params.username);
 
@@ -215,13 +175,6 @@ const userController = {
   },
 
   getAllUser: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/users',
-     *   Method: 'GET',
-     *   Description: 'Retrieves a list of all registered users. (Admin access required)'
-     * }
-     */
     try {
       const allUser = await user.findAll({
         attributes: ['username', 'role', 'email', 'verified'],
@@ -233,18 +186,6 @@ const userController = {
   },
 
   updateRole: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/users/:username/role',
-     *   Method: 'PUT',
-     *   Request: {
-     *     Body: {
-     *       "role": "string"
-     *     }
-     *   },
-     *   Description: 'Updates the role of a specific user. (Admin access required)'
-     * }
-     */
     try {
       const { username } = req.params;
       const { role } = req.body;
@@ -263,13 +204,6 @@ const userController = {
   },
 
   deleteUser: async (req, res) => {
-    /**
-     * Data: {
-     *   Endpoint: '/api/users/:username',
-     *   Method: 'DELETE',
-     *   Description: 'Deletes a user from the system. (Admin access required)'
-     * }
-     */
     try {
       const selectedUser = await user.findByPk(req.params.username);
 

@@ -55,11 +55,10 @@ const jwtController = {
   verifyForgotPassword: async (req, res) => {
     try {
       const selectedUser = await user.findByPk(req.params.username);
-      const decryptedOtp = req.params.encryptedOtp / 291831;
 
       if (selectedUser) {
-        selectedUser.update({ password: decryptedOtp });
-        responseHelper(res, 200, null, 'Your password has been changed, check your email for the new password!');
+        selectedUser.update({ password: req.body.newPassword });
+        responseHelper(res, 200, null, 'Change password successful');
       }
     } catch (error) {
       responseHelper(res, 500, null, 'Internal Server Error');
